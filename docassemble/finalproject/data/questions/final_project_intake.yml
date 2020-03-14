@@ -1,0 +1,127 @@
+---
+comment: |
+  These are some of the optional settings you can use to customize a Docassemble
+  interview
+metadata:
+  title: |
+    My Final Project
+  short title: |
+    Project
+  authors: 
+    - Jane Roe
+    - John Doe
+  # Logo is made up of HTML code (no variables). You can put any HTML you like here.
+  # The image itself needs to be part of an installed package on the server
+  # Or a static image on a site like imgur.com
+  logo: |
+    <img src="/packagestatic/docassemble.finalproject/suffolk-logo-boston.svg" style="max-height:1.9em;"/> <h3>My project</h3>
+  revision_date: 2020-03-13
+---
+features:
+  # This moves the "help" and "back" button next to the Continue button
+  question help button: True
+  # question back button: True
+  # One way to customize appearance is with a Bootstrap theme
+  # Try linking one from https://www.bootstrapcdn.com/bootswatch/
+  # Or generate your own via https://pikock.github.io/bootstrap-magic/app/index.html#!/editor
+  bootstrap theme: https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cosmo/bootstrap.min.css
+---
+interview help:
+  label: Help
+  heading: About this interview
+  content: |
+    This interview was written by ${comma_and_list(all_variables(special='metadata')['authors'])}, law students who participated in the Lawyering in the Age of Smart Machines Class, Spring 2020 at Suffolk University Law School.
+    
+    [About our class](https://nonprofittechy.github.io/docassemble-class/docs/classes/2020-law-smart-machines).
+    
+    It was last updated on ${format_date(all_variables(special='metadata')['revision_date'])}
+---
+comment: |
+  You need to initialize your objects before using them
+objects:
+  - client: Individual
+---
+modules:
+  - .simplify
+  - .gsheets
+---
+comment: |
+  This code block controls the question order. Adding an ID is a good idea, but
+  not required.
+id: interview order
+mandatory: True
+code: |
+  intro
+  client.name.first
+  client.address.address
+  likes_fruit
+  random_fact
+  sent_responses_to_gsheets
+  ending_screen
+---
+code: |
+  # get_simple_vars is a function that takes the whole Docassemble interview
+  # And converts all the variables into a format that makes sense to save in 
+  # a spreadsheet - i.e., only 2 dimensions.
+  # It understands about Individual, Person, Address, and checkboxes, as well as
+  # dates which will be converted to Year-Month-Date (2020-03-14) format.
+
+  # append_with_column_labels takes the name of a Google Sheet and a dictionary
+  # of key=>value pairs. It will add the values in the appropriate column,
+  # based on headings in the first row. It will add new headings if needed.
+  # You may have some variables you don't want to save in the spreadsheet. Add those
+  # to the list given in skip= parameter.
+  # I'm skipping the event/intro screens here.
+  
+  # It works with a Google Service Account, a special email address that you can
+  # share a Google Sheet with to give it access.
+  # The address is: google-sheets@lemma-legal-docassemble.iam.gserviceaccount.com
+  # When sharing the sheet, uncheck the box "notify recipients"
+  append_with_column_labels('Final Project Test Sheet', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
+  sent_responses_to_gsheets = True
+---
+#event: intro
+question: |
+   This interview will help you complete an intake for Suffolk's clinical program.
+continue button field: intro
+---
+question: |
+  What is your name?
+fields:
+  - First: client.name.first
+  - Middle: client.name.middle
+    required: False
+  - Last: client.name.last
+---
+question: |
+  Address
+fields:
+  - Street: client.address.address
+    address autocomplete: True
+  - City: client.address.city
+  - State: client.address.state
+  - Zip: client.address.zip
+---
+question: |
+  Test adding a new column
+fields:
+  - Random fact: random_fact
+---
+question: |
+  Please tell me what you think.
+fields:
+  - "Select the fruits you like": likes_fruit
+    datatype: checkboxes
+    choices:
+      - apple
+      - peach
+      - pear
+  - "What is your favorite fruit overall?": favorite_fruit
+---
+event: ending_screen
+question: |
+  All done
+subquestion: |
+  Thanks, we submitted your responses to the Suffolk Clinic.
+  
+  `${res}`
