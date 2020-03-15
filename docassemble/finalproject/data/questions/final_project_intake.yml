@@ -84,7 +84,7 @@ code: |
   # share a Google Sheet with to give it access.
   # The address is: google-sheets@lemma-legal-docassemble.iam.gserviceaccount.com
   # When sharing the sheet, uncheck the box "notify recipients"
-  append_with_column_labels('Final Project Test Sheet', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
+  res = append_with_column_labels('Final Project Test Sheet', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
   sent_responses_to_gsheets = True
 ---
 #event: intro
