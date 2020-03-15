@@ -62,34 +62,11 @@ code: |
   client.address.address
   likes_fruit
   random_fact
-  # This needs to be the second to last thing to run. Otherwise some variables might be undefined
-  sent_responses_to_gsheets 
-  ending_screen
----
-code: |
-  # get_simple_vars is a function that takes the whole Docassemble interview
-  # And converts all the variables into a format that makes sense to save in 
-  # a spreadsheet - i.e., only 2 dimensions.
-  # It understands about Individual, Person, Address, and checkboxes, as well as
-  # dates which will be converted to Year-Month-Date (2020-03-14) format.
-
-  # append_with_column_labels takes the name of a Google Sheet and a dictionary
-  # of key=>value pairs. It will add the values in the appropriate column,
-  # based on headings in the first row. It will add new headings if needed.
-  # You may have some variables you don't want to save in the spreadsheet. Add those
-  # to the list given in skip= parameter.
-  # I'm skipping the event/intro screens here.
-  
-  # It works with a Google Service Account, a special email address that you can
-  # share a Google Sheet with to give it access.
-  # The address is: google-sheets@lemma-legal-docassemble.iam.gserviceaccount.com
-  # When sharing the sheet, uncheck the box "notify recipients"
-  append_with_column_labels('Final Project Test Sheet', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
-  sent_responses_to_gsheets = True
+  download_template
 ---
 #event: intro
 question: |
-   This interview will help you complete an intake for Suffolk's clinical program.
+   This interview will help you generate a document to file in court.
 continue button field: intro
 ---
 question: |
@@ -110,7 +87,7 @@ fields:
   - Zip: client.address.zip
 ---
 question: |
-  Test adding a new column
+  A random fact
 fields:
   - Random fact: random_fact
 ---
@@ -125,11 +102,16 @@ fields:
       - pear
   - "What is your favorite fruit overall?": favorite_fruit
 ---
-event: ending_screen
+attachment:
+  name: Final Report
+  variable name: my_final_report
+  docx template file: Report.docx
+  file name: Report
+---
+event: download_template
 question: |
-  All done
+  Your document is ready
 subquestion: |
-  Thanks, we submitted your responses to the Suffolk Clinic.
+  Click to open it
   
-  Below is a preview.
-  `${res}`
+  ${my_final_report.pdf}
