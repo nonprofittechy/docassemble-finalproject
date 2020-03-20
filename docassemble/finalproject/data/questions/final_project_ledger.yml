@@ -1,0 +1,181 @@
+---
+comment: |
+  These are some of the optional settings you can use to customize a Docassemble
+  interview
+
+  Some of the metadata fields are used for special purposes. You can add
+  a new one if you like. You can access in your interview via
+  all_variables(special='metadata'), which returns a dictionary.
+metadata:
+  title: |
+    My Final Project
+  short title: |
+    Project
+  authors: 
+    - Jane Roe
+    - John Doe
+  # Logo is made up of HTML code (no variables). You can put any HTML you like here.
+  # The image itself needs to be part of an _installed package_ on the server
+  # Or a static image on a site like imgur.com
+  logo: |
+    <img src="/packagestatic/docassemble.finalproject/suffolk-logo-boston.svg" style="max-height:1.9em;"/> <h3>My project</h3>
+  revision_date: 2020-03-13
+---
+comment: |
+  We make use of a bootstrap theme here to customize the appearance.
+  You can find free boostrap themes that are easy to include at 
+  https://www.bootstrapcdn.com/bootswatch/
+  
+  Bootstrap is probably the most popular framework for laying out
+  a website, so you can find other sources, too. You might need to download
+  and place in the "static" folder of the playground to access those.
+  
+  You can make your own custom bootstrap theme, that you will need to download
+  and put in the static folder, here: https://bootstrap.build/ or Google
+  "Bootstrap theme generator"
+features:
+  # This moves the "help" and "back" button next to the Continue button
+  question help button: True
+  bootstrap theme: https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cosmo/bootstrap.min.css
+---
+interview help:
+  label: Help
+  heading: About this interview
+  content: |
+    This interview was written by ${comma_and_list(all_variables(special='metadata')['authors'])}, law students who participated in the Lawyering in the Age of Smart Machines Class, Spring 2020 at Suffolk University Law School.
+    
+    [FILE https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/Suffolk_University_coat_of_arms.svg/1280px-Suffolk_University_coat_of_arms.svg.png]
+    
+    [About our class](https://nonprofittechy.github.io/docassemble-class/docs/classes/2020-law-smart-machines).
+    
+    It was last updated on ${format_date(all_variables(special='metadata')['revision_date'])}
+---
+comment: |
+  You need to initialize your objects before using them
+objects:
+  - client: Individual
+  - ledger: DAList.using(object_type=DAObject, complete_attribute='name',there_is_another=False)
+---
+modules:
+  - .image_buttons # This is a custom function to show an array of buttons
+---
+features:
+  css:
+    - image-buttons.css # This CSS supports the image_buttons.py module
+---
+comment: |
+  This code block controls the question order. Adding an ID is a good idea, but
+  not required.
+id: interview order
+mandatory: True
+code: |
+  intro
+  button_menu # This is the main menu screen
+  download_template
+---
+#event: intro
+question: |
+   This interview collects information into a ledger
+continue button field: intro
+---
+comment: |
+  The button_field function expects a list of dictionaries.
+  Each dictionary can have three fields: label, url, and icon.
+  icon is assumed to be a font-awesome icon, but it can also be an image
+  you upload to the static folder.
+  
+  URL can come from a few places. Here, we're using a list's built-in
+  'add_action' to return a link to add an item to the list.
+  
+  We also use url_action() which returns a link that jumps to a screen in
+  the interview to define a given variable. In the background, this calls
+  the force_ask() function. It's equivalent to a link in a review screen--
+  it returns to the screen where the data was defined and lets you change
+  the existing value.
+variable name: buttons
+data:
+  - label: Add an item
+    url: |
+      ${ledger.add_action(url_only=True)}
+    icon: plus-circle
+  - label: Review items
+    url: |
+      ${url_action('review_items')}
+    icon: list
+  - label: Download report
+    url: |
+      ${url_action('ending_screen')}
+    icon: file-invoice
+---
+comment: |
+  To change the number/links in the buttons, look at the block above
+event: button_menu
+question: |
+  Choose an action
+subquestion: |
+  ${button_field(buttons)}
+---
+question: |
+  Add an item
+fields:
+  - Item Name: ledger[i].name
+  - Item amount: ledger[i].value
+    datatype: currency
+list collect: True 
+---
+table: ledger.table
+rows: ledger
+columns:
+  - Name: |
+      row_item.name
+  - Amount: |
+      currency(row_item.value)
+edit:
+  - ledger.name
+---
+comment: |
+  This is a special screen to review the existing ledger items
+  The block above creates a "table" that we assigned as an attribute
+  of the ledger object.
+  
+  add_action() is a built-in method of a list.
+continue button field: review_items
+question: |
+  Review the ledger
+subquestion: |
+  ${ledger.table}
+  
+  ${ledger.add_action()}
+---
+question: |
+  What is your name?
+fields:
+  - First: client.name.first
+  - Middle: client.name.middle
+    required: False
+  - Last: client.name.last
+---
+question: |
+  Your address
+fields:
+  - Street: client.address.address
+    address autocomplete: True
+  - City: client.address.city
+  - State: client.address.state
+  - Zip: client.address.zip
+---
+attachment:
+  name: Ledger
+  variable name: ledger_report
+  docx template file: ledger.docx
+  file name: ledger
+---
+event: ending_screen
+question: |
+  Your document is ready
+subquestion: |
+  Click to open it
+  
+  ${ledger_report.pdf}
+  
+  [Back to main menu](${url_action('button_menu')})
