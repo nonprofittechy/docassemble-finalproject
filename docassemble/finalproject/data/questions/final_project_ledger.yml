@@ -54,7 +54,7 @@ comment: |
   You need to initialize your objects before using them
 objects:
   - client: Individual
-  - ledger: DAList.using(object_type=DAObject, complete_attribute='name',there_is_another=False)
+  - ledger: DAList.using(object_type=DAObject, complete_attribute='name',there_is_another=False,there_are_any=False)
 ---
 modules:
   - .image_buttons # This is a custom function to show an array of buttons
@@ -69,9 +69,10 @@ comment: |
 id: interview order
 mandatory: True
 code: |
+  multi_user = True
   intro
   button_menu # This is the main menu screen
-  download_template
+  ending_screen
 ---
 #event: intro
 question: |
@@ -80,18 +81,19 @@ continue button field: intro
 ---
 comment: |
   The button_field function expects a list of dictionaries.
-  Each dictionary can have three fields: label, url, and icon.
+  Each dictionary can have three fields: label, url (or action), and icon.
   icon is assumed to be a font-awesome icon, but it can also be an image
   you upload to the static folder.
   
   URL can come from a few places. Here, we're using a list's built-in
-  'add_action' to return a link to add an item to the list.
+  'add_action' to return a link to add an item to the list. 
   
-  We also use url_action() which returns a link that jumps to a screen in
-  the interview to define a given variable. In the background, this calls
-  the force_ask() function. It's equivalent to a link in a review screen--
-  it returns to the screen where the data was defined and lets you change
-  the existing value.
+  We also set an 'action' instead of a URL, which uses use url_action()
+  to jump to a screen in the interview to define or edit a given variable.
+  Think of this like a review screen, or mentioning the action in a 
+  mandatory code block
+  
+  Pick out an icon here: https://fontawesome.com/icons?d=gallery&m=free
 variable name: buttons
 data:
   - label: Add an item
@@ -99,20 +101,34 @@ data:
       ${ledger.add_action(url_only=True)}
     icon: plus-circle
   - label: Review items
-    url: |
-      ${url_action('review_items')}
+    action: review_items
     icon: list
   - label: Download report
-    url: |
-      ${url_action('ending_screen')}
+    action: ending_screen
     icon: file-invoice
+  - label: Share a link to this ledger   
+    icon: share-alt
+    action: shared_link
 ---
 comment: |
   To change the number/links in the buttons, look at the block above
+  We undefine send_to_phone and send_to_email so the user
+  can specify a new email/phone to share with.
+undefine:
+  - send_to_phone
+  - send_to_email
 event: button_menu
 question: |
-  Choose an action
+  Choose an action below
 subquestion: |
+  % if defined('client.name.first'):
+  Hello, ${client}.
+  
+  % endif
+  % if len(ledger.elements) > 0:
+  So far you have added ${nice_number(len(ledger.elements))} items.
+  % endif
+  
   ${button_field(buttons)}
 ---
 question: |
@@ -164,6 +180,38 @@ fields:
   - State: client.address.state
   - Zip: client.address.zip
 ---
+continue button field: save_and_return
+question: |
+  Share (or save and return to) your ledger
+subquestion: |
+  Right click and copy [this link](${interview_url()})
+fields:
+  - Email a link: send_to_email
+    datatype: yesno
+  - Your email: email_to_use
+    datatype: email
+    show if: send_to_email
+  - Text a link: send_to_phone
+    datatype: yesno
+  - Your phone number: phone_to_use
+    show if: send_to_phone
+---
+template: sharing_message
+subject: |
+  Here's a link to your ledger
+content: |
+  You asked us to send you a link to your ledger. Here it is!
+  ${interview_url()}
+---
+reconsider: True
+code: |
+  if send_to_phone:
+    send_sms(to=phone_to_use, template=sharing_message)
+  if send_to_email:
+    send_email(to=email_to_use,template=sharing_message)
+  shared_link = True    
+---
+reconsider: True
 attachment:
   name: Ledger
   variable name: ledger_report
