@@ -1,0 +1,19 @@
+.btn-da-custom {
+    width: 8em;
+    height: 8em;
+    text-align: center;
+    vertical-align: middle;
+}
+.btn-da-custom svg {
+    width: 4em !important;
+    height: 4em !important;
+    text-align: center;
+    vertical-align: middle;
+}
+.btn-da-custom span:first-of-type::after {
+    content: "";
+    display: block;
+}
+.btn-da-custom:focus {
+    outline: 1px dotted !important;
+}
