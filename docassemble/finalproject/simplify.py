@@ -4,15 +4,23 @@ from decimal import Decimal
 
 __all__ = ['get_simple_vars']
 
-def get_simple_vars(mapping = {},skip=[]):
+def get_simple_vars(mapping = {},skip=[],custom=False):
   """Returns a dictionary of the current interview state with variables suitable to include in a spreadsheet.
   Similar to Google Forms. You will lose some information--variables will be flattened out.
   Does its best to handle Individual, Person, Address, DAList/DADict and DAObject datatypes
+
+  Optionally, map the columns to new names with a dictionary
+
+  By default this takes the interview's current state. You can instead provide your own dictionary
+  of variables to simplify
   """
   # The following are keys that Docassemble uses that we never want to extract from the answer set
   keys_to_ignore = ['_internal','url_args','PY2','string_types','nav','__warningregistry__'] + skip
 
-  interview_state = all_variables(simplify=False)
+  if custom:
+    interview_state = custom
+  else:
+    interview_state = all_variables(simplify=False)
   interview_state = {k:v for k, v in interview_state.items() if k not in keys_to_ignore}
 
   simplified_vars = {}
@@ -45,7 +53,16 @@ def get_simple_vars(mapping = {},skip=[]):
     else:
       simplified_vars[key] = str(value)
 
-  return simplified_vars
+  # Map the values to new column names if the user provided a mapping
+  simplified = {}
+  if len(mapping) > 0:
+    for name, value in simplified_vars.items():
+      if name in mapping:
+        simplified[mapping[name]] = value
+      else:
+        simplified[name] = value
+
+  return simplified
 
 def add_individual(the_dict, key, individual):
   the_dict[key] = str(individual)
