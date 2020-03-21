@@ -61,8 +61,9 @@ def get_simple_vars(mapping = {},skip=[],custom=False):
         simplified[mapping[name]] = value
       else:
         simplified[name] = value
-
-  return simplified
+    return simplified
+  else:
+    return simplified_vars
 
 def add_individual(the_dict, key, individual):
   the_dict[key] = str(individual)

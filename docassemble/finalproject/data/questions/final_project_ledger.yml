@@ -80,10 +80,13 @@ question: |
 continue button field: intro
 ---
 comment: |
-  The button_field function expects a list of dictionaries.
+  The button_field() function expects a list of dictionaries.
+  Below, we use Docassemble's ability to turn YAML into a dictionary/list
+  or more complex object. See: https://docassemble.org/docs/initial.html#data
+  
   Each dictionary can have three fields: label, url (or action), and icon.
   icon is assumed to be a font-awesome icon, but it can also be an image
-  you upload to the static folder.
+  you upload to the static folder. 
   
   URL can come from a few places. Here, we're using a list's built-in
   'add_action' to return a link to add an item to the list. 
@@ -109,6 +112,9 @@ data:
   - label: Share a link to this ledger   
     icon: share-alt
     action: shared_link
+  - label: Update my personal info
+    action: client.name.first
+    icon: user-circle
 ---
 comment: |
   To change the number/links in the buttons, look at the block above
@@ -147,7 +153,7 @@ columns:
   - Amount: |
       currency(row_item.value)
 edit:
-  - ledger.name
+  - name
 ---
 comment: |
   This is a special screen to review the existing ledger items
@@ -211,6 +217,9 @@ code: |
     send_email(to=email_to_use,template=sharing_message)
   shared_link = True    
 ---
+comment: |
+  We want Docassemble to regenerate the attachment each time we visit the
+  link to download it. reconsider: True does that.
 reconsider: True
 attachment:
   name: Ledger
@@ -218,6 +227,15 @@ attachment:
   docx template file: ledger.docx
   file name: ledger
 ---
+comment: |
+  One way to attach a file to an interview is by just embedding the variable
+  using Mako tags, like we do below.
+  
+  A file is a DAFile object. https://docassemble.org/docs/objects.html#DAFile
+  If it's a template we filled in, it will have at least two versions:
+  the .docx version or .rtf version, and a PDF version that is automatically
+  created. Adding .pdf or .docx gets that version of the file, which is an 
+  attribute of the object.
 event: ending_screen
 question: |
   Your document is ready

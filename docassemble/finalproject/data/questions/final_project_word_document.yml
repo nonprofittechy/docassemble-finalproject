@@ -49,7 +49,6 @@ objects:
 ---
 modules:
   - .simplify
-  - .gsheets
 ---
 comment: |
   This code block controls the question order. Adding an ID is a good idea, but
