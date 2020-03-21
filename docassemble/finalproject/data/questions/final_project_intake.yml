@@ -14,12 +14,13 @@ metadata:
   authors: 
     - Jane Roe
     - John Doe
+    - Quinten Steenhuis
   # Logo is made up of HTML code (no variables). You can put any HTML you like here.
   # The image itself needs to be part of an _installed package_ on the server
   # Or a static image on a site like imgur.com
   logo: |
     <img src="/packagestatic/docassemble.finalproject/suffolk-logo-boston.svg" style="max-height:1.9em;"/> <h3>My project</h3>
-  revision_date: 2020-03-13
+  revision_date: 2020-03-21
 ---
 features:
   # This moves the "help" and "back" button next to the Continue button
@@ -29,6 +30,7 @@ features:
   # Try linking one from https://www.bootstrapcdn.com/bootswatch/
   # Or generate your own via https://pikock.github.io/bootstrap-magic/app/index.html#!/editor
   bootstrap theme: https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cosmo/bootstrap.min.css
+  # bootstrap theme: https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/darkly/bootstrap.min.css
 ---
 interview help:
   label: Help
@@ -84,7 +86,7 @@ code: |
   # share a Google Sheet with to give it access.
   # The address is: google-sheets@lemma-legal-docassemble.iam.gserviceaccount.com
   # When sharing the sheet, uncheck the box "notify recipients"
-  res = append_with_column_labels('Final Project Test Sheet', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
+  res = append_with_column_labels('My project 2', get_simple_vars(skip=['intro','sent_responses_to_gsheets']))
   sent_responses_to_gsheets = True
 ---
 #event: intro
